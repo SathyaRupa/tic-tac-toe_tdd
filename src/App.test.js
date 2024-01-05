@@ -1,29 +1,48 @@
-import { render, fireEvent } from "@testing-library/react";
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom/extend-expect";
+import Board from "./App";
 
-test("renders initial board", () => {
-  const { getByText } = render(<Board />);
+describe("App", () => {
+  it("should render a button", () => {
+    render(<Board />);
+    const buttons = screen.getAllByRole("button");
+    expect(buttons.length).toBeGreaterThan(0);
+  });
 
-  expect(getByText(/Next player/i)).toBeInTheDocument();
+  it("should render X when button is clicked", () => {
+    render(<Board />);
+    const button = screen.getAllByRole("button")[0];
+    fireEvent.click(button);
+    expect(button.textContent).toBe("X");
+  });
 
-  expect(getByText(/Go to game start/i)).toBeInTheDocument();
+  it("should render O when clicked again", () => {
+    render(<Board />);
+    const squares = screen.getAllByRole("button");
+    fireEvent.click(squares[0]);
+    fireEvent.click(squares[1]);
+    expect(squares[1].textContent).toBe("O");
+  });
+
+  it("should display a value only when an empty square is clicked", () => {
+    render(<Board />);
+    const squares = screen.getAllByRole("button");
+    fireEvent.click(squares[0]);
+    fireEvent.click(squares[0]);
+    expect(squares[0].textContent).toBe("X");
+  });
+
+  it("should calculate the winner", () => {
+    render(<Board />);
+    const winner = screen.getByText("Winner: X");
+    const squares = screen.getAllByRole("button");
+    fireEvent.click(squares[0]);
+    fireEvent.click(squares[3]);
+    fireEvent.click(squares[1]);
+    fireEvent.click(squares[4]);
+    fireEvent.click(squares[2]);
+    expect(winner).toBeInTheDocument();
+  });
 });
 
-test("Uodates status when a move is made", () => {
-  const { getByText } = render(<Board />);
-
-  fireEvent.click(getByText(/Go to move #0/i));
-
-  expect(getByText(/Next player: O/i)).toBeInTheDocument();
-});
-
-test("displays winner status", () => {
-  const { getByText } = render(<Board />);
-
-  fireEvent.click(getByText(/Go to move #0/i));
-  fireEvent.click(getByText(/Go to move #1/i));
-  fireEvent.click(getByText(/Go to move #3/i));
-  fireEvent.click(getByText(/Go to move #2/i));
-  fireEvent.click(getByText(/Go to move #6/i));
-
-  expect(getByText(/Winner: X/i)).toBeInTheDocument();
-});
